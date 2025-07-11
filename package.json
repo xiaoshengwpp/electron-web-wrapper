@@ -1,5 +1,5 @@
 {
-  "name": "Electron BuiBuiBui",
+  "name": "electron-buibuibui",
   "version": "0.0.1",
   "description": "xiaoshengwpp",
   "author": "xiaoshengwpp",
@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development electron .",
     "start": "cross-env NODE_ENV=production electron .",
+    "prebuild": "node build-config.js",
     "build": "electron-builder"
   },
   "devDependencies": {
@@ -24,7 +25,8 @@
       "main.js",
       "preload.js",
       "config.json",
-      "package.json"
+      "package.json",
+      "assets/**/*"
     ],
     "directories": {
       "output": "dist"
@@ -40,6 +42,8 @@
           "arch": ["x64", "ia32"]
         }
       ]
+    },
+    "mac": {
     }
   }
 }

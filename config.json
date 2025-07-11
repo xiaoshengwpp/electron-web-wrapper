@@ -1,7 +1,17 @@
 {
   "app": {
     "name": "ElectronBuiBuiBui",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "title": "ElectronBuiBuiBui",
+    "icon": {
+      "window": "assets/icon.png",
+      "dock": "assets/icon.png",
+      "build": {
+        "win": "assets/icon.ico",
+        "mac": "assets/icon.icns",
+        "linux": "assets/icon.png"
+      }
+    }
   },
   "window": {
     "width": 1200,
@@ -10,8 +20,8 @@
     "minHeight": 600
   },
   "urls": {
-    "development": "https://xxx.com",
-    "production": "https://xxx.com"
+    "development": "https://www.baidu.com",
+    "production": "https://www.baidu.com"
   },
   "features": {
     "devTools": false,

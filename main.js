@@ -21,11 +21,12 @@ console.log(`🌐 目标地址: ${targetUrl}`);
 
 function createWindow() {
   // 创建浏览器窗口
-  const mainWindow = new BrowserWindow({
+  const windowOptions = {
     width: config.window.width,
     height: config.window.height,
     minWidth: config.window.minWidth,
     minHeight: config.window.minHeight,
+    title: config.app.title,
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -34,7 +35,20 @@ function createWindow() {
       webSecurity: isDev ? config.features.webSecurity : true, // 开发环境禁用安全限制
       allowRunningInsecureContent: isDev, // 开发环境允许混合内容
     }
-  });
+  };
+
+  // 设置图标（如果配置了且文件存在）
+  if (config.app.icon && config.app.icon.window) {
+    const iconPath = path.join(__dirname, config.app.icon.window);
+    if (fs.existsSync(iconPath)) {
+      windowOptions.icon = iconPath;
+      console.log(`🎨 窗口图标: ${iconPath}`);
+    } else {
+      console.warn(`⚠️  窗口图标文件不存在: ${iconPath}`);
+    }
+  }
+
+  const mainWindow = new BrowserWindow(windowOptions);
 
   // 加载目标URL
   mainWindow.loadURL(targetUrl)
@@ -90,6 +104,17 @@ function createWindow() {
 
 // 应用就绪时创建窗口
 app.whenReady().then(() => {
+  // 设置应用图标（用于Dock/任务栏）
+  if (config.app.icon && config.app.icon.dock) {
+    const iconPath = path.join(__dirname, config.app.icon.dock);
+    if (fs.existsSync(iconPath)) {
+      app.dock && app.dock.setIcon(iconPath); // macOS Dock图标
+      console.log(`🎨 Dock图标设置: ${iconPath}`);
+    } else {
+      console.warn(`⚠️  Dock图标文件不存在: ${iconPath}`);
+    }
+  }
+  
   createWindow();
 
   // macOS 特有行为

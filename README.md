@@ -46,7 +46,17 @@ yarn build
 {
   "app": {
     "name": "ElectronBuiBuiBui",
-    "version": "0.0.1"
+    "version": "1.0.0",
+    "title": "ElectronBuiBuiBui",    // 窗口标题
+    "icon": {
+      "window": "assets/icon.png",    // 窗口图标
+      "dock": "assets/icon.png",      // Dock/任务栏图标
+      "build": {
+        "win": "assets/icon.ico",     // Windows构建图标
+        "mac": "assets/icon.icns",    // macOS构建图标
+        "linux": "assets/icon.png"    // Linux构建图标
+      }
+    }
   },
   "window": {
     "width": 1200,        // 窗口宽度
@@ -70,6 +80,8 @@ yarn build
 
 - ✅ 环境自动切换（开发/生产）
 - ✅ 配置文件管理，无需修改代码
+- ✅ 自定义窗口标题和图标
+- ✅ 支持多种格式的应用图标
 - ✅ 自定义右键菜单（包含刷新功能）
 - ✅ 开发模式自动打开调试工具
 - ✅ 窗口大小可配置
@@ -85,7 +97,12 @@ yarn build
 ├── main.js           # 主进程文件
 ├── preload.js        # 预加载脚本
 ├── config.json       # 配置文件 ⭐
+├── build-config.js   # 构建配置脚本
 ├── package.json      # 项目配置
+├── assets/           # 资源文件目录
+│   ├── icon.png      # PNG格式图标
+│   ├── icon.ico      # ICO格式图标（Windows）
+│   └── icon.icns     # ICNS格式图标（macOS）
 └── README.md         # 说明文档
 ```
 
@@ -102,7 +119,7 @@ yarn build
 
 ```
 🚀 启动模式: 开发环境
-🌐 目标地址: http://localhost:9527
+🌐 目标地址: http://xxx
 ✅ 页面加载成功
 ```
 
@@ -110,9 +127,28 @@ yarn build
 
 你可以根据需要修改 `config.json` 中的任何配置项：
 
+- `app.title`: 设置窗口标题
+- `app.icon`: 配置应用图标
 - `urls`: 修改开发和生产环境的地址
 - `window`: 调整窗口大小和最小尺寸
 - `features`: 开启或关闭特定功能
+
+### 图标配置说明
+
+应用支持多种图标配置：
+
+1. **窗口图标** (`icon.window`): 显示在窗口标题栏的图标
+2. **Dock图标** (`icon.dock`): 显示在 macOS Dock 或 Windows 任务栏的图标
+3. **构建图标** (`icon.build`): 打包后应用程序的图标
+
+**支持的图标格式：**
+- PNG: 通用格式，适用于开发环境
+- ICO: Windows 专用格式
+- ICNS: macOS 专用格式
+
+**图标文件要求：**
+- 建议尺寸: 256x256 像素或更高
+- 文件路径: 相对于项目根目录
 
 ## 🏗️ 构建配置
 
@@ -121,6 +157,8 @@ yarn build
 ```bash
 yarn build
 ```
+
+构建时会自动从 `config.json` 读取图标配置并应用到最终的应用程序中。
 
 ### 构建特定平台
 
@@ -152,6 +190,15 @@ yarn build --linux
 1. 确保本地开发服务器已启动
 2. 检查端口号是否正确
 3. 修改 `config.json` 中的 `development` 地址
+
+### 图标不显示
+
+如果图标没有正确显示：
+
+1. 检查图标文件是否存在于指定路径
+2. 确认图标文件格式正确（PNG/ICO/ICNS）
+3. 查看控制台是否有图标相关的错误信息
+4. 重启应用以应用图标更改
 
 ## 📦 技术栈
 
