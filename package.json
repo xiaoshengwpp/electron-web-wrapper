@@ -1,16 +1,14 @@
 {
-  "name": "Electron",
+  "name": "Electron BuiBuiBui",
   "version": "0.0.1",
-  "description": "bantiaomaomaochong",
-  "author": "Your Name <your.email@example.com>",
+  "description": "xiaoshengwpp",
+  "author": "xiaoshengwpp",
   "main": "main.js",
   "license": "MIT",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "dev": "concurrently \"yarn:react-start\" \"yarn:electron-start\"",
-    "react-start": "echo \"Please replace this with your React start script, e.g., (cd my-react-app && yarn start)\" && exit 1",
-    "electron-start": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron ."
+    "dev": "cross-env NODE_ENV=development electron .",
+    "start": "cross-env NODE_ENV=production electron .",
+    "build": "electron-builder"
   },
   "devDependencies": {
     "concurrently": "^9.2.0",
@@ -25,9 +23,8 @@
     "files": [
       "main.js",
       "preload.js",
-      "index.html",
-      "package.json",
-      "build/**/*"
+      "config.json",
+      "package.json"
     ],
     "directories": {
       "output": "dist"
@@ -36,17 +33,11 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
+          "arch": ["x64", "ia32"]
         },
         {
           "target": "portable",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
+          "arch": ["x64", "ia32"]
         }
       ]
     }

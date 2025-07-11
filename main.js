@@ -1,79 +1,123 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
+const fs = require('fs');
+
+// 开发环境下完全禁用安全警告
+if (process.env.NODE_ENV === 'development' || process.argv.includes('--dev')) {
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
+  app.commandLine.appendSwitch('--disable-web-security');
+  app.commandLine.appendSwitch('--allow-running-insecure-content');
+}
+
+// 加载配置文件
+const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+
+// 判断环境
+const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+const targetUrl = isDev ? config.urls.development : config.urls.production;
+
+console.log(`🚀 启动模式: ${isDev ? '开发环境' : '生产环境'}`);
+console.log(`🌐 目标地址: ${targetUrl}`);
 
 function createWindow() {
   // 创建浏览器窗口
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: config.window.width,
+    height: config.window.height,
+    minWidth: config.window.minWidth,
+    minHeight: config.window.minHeight,
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true, // 推荐开启
-      nodeIntegration: false // 推荐关闭  / 开启后可以右键菜单
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: isDev ? config.features.webSecurity : true, // 开发环境禁用安全限制
+      allowRunningInsecureContent: isDev, // 开发环境允许混合内容
     }
   });
 
-  const isDev = process.env.NODE_ENV === 'development';
+  // 加载目标URL
+  mainWindow.loadURL(targetUrl)
+    .then(() => {
+      console.log('✅ 页面加载成功');
+    })
+    .catch(error => {
+      console.error('❌ 页面加载失败:', error);
+      if (isDev) {
+        console.log('💡 提示: 请确保本地开发服务器已启动');
+      }
+    });
 
-  if (isDev) {
-    // 开发模式: 加载 React 的开发服务器
-    mainWindow.loadURL('http://localhost:3000');
-    // 打开开发者工具
-    mainWindow.webContents.openDevTools();
-  } else {
-    // 生产模式: 加载线上地址
-    const prodUrl = process.env.PROD_URL || 'https://tms.mingruiyun.com/';
-    mainWindow.loadURL(prodUrl);
+  // 页面准备就绪后显示窗口
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
+  // 不自动打开开发者工具，可以通过右键菜单手动开启
+
+  // 右键菜单
+  if (config.features.contextMenu) {
+    mainWindow.webContents.on('context-menu', (_, params) => {
+      const contextMenu = Menu.buildFromTemplate([
+        {
+          label: '刷新',
+          accelerator: 'CmdOrCtrl+R',
+          click: () => mainWindow.webContents.reload()
+        },
+        { type: 'separator' },
+        { label: '复制', role: 'copy' },
+        { label: '粘贴', role: 'paste' },
+        { label: '全选', role: 'selectAll' },
+        { type: 'separator' },
+        {
+          label: '开发者工具',
+          accelerator: 'CmdOrCtrl+Shift+I',
+          click: () => mainWindow.webContents.openDevTools()
+        }
+      ]);
+      contextMenu.popup({ window: mainWindow, x: params.x, y: params.y });
+    });
   }
 
-  // 添加右键上下文菜单
-  mainWindow.webContents.on('context-menu', (event, params) => {
-    const template = [
-      {
-        label: '复制',
-        role: 'copy',
-      },
-      {
-        label: '粘贴',
-        role: 'paste',
-      },
-      {
-        label: '全选',
-        role: 'selectAll',
-      },
-      { type: 'separator' },
-      {
-        label: '检查',
-        accelerator: 'CmdOrCtrl+Shift+I',
-        click: () => {
-          mainWindow.webContents.openDevTools();
-        }
-      }
-    ];
-    const menu = Menu.buildFromTemplate(template);
-    menu.popup(mainWindow, params.x, params.y);
+  // 监听页面加载错误
+  mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
+    console.error(`❌ 页面加载失败: ${errorCode} - ${errorDescription}`);
+    console.error(`📍 失败的URL: ${validatedURL}`);
   });
+
+  return mainWindow;
 }
 
-// Electron会在初始化完成并且准备好创建浏览器窗口时调用这个方法
-// 部分 API 在 ready 事件触发后才能使用。
+// 应用就绪时创建窗口
 app.whenReady().then(() => {
   createWindow();
 
-  app.on('activate', function () {
-    // 在macOS上，当单击dock图标并且没有其他窗口打开时，
-    // 通常在应用程序中重新创建一个窗口。
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  // macOS 特有行为
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
   });
 });
 
-// 当所有窗口都被关闭时退出
-app.on('window-all-closed', function () {
-  // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，
-  // 否则绝大部分应用及其菜单栏会保持激活。
-  if (process.platform !== 'darwin') app.quit();
+// 所有窗口关闭时退出应用
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
-// 在这个文件中，你可以包含应用程序剩余的所有主进程代码。
-// 你也可以把它们分成几个文件，然后用 require 导入。 
+// 防止应用多开
+app.on('second-instance', () => {
+  const windows = BrowserWindow.getAllWindows();
+  if (windows.length > 0) {
+    const mainWindow = windows[0];
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
 
+// 应用启动时的单例检查
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}

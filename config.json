@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "ElectronBuiBuiBui",
+    "version": "1.0.0"
+  },
+  "window": {
+    "width": 1200,
+    "height": 800,
+    "minWidth": 800,
+    "minHeight": 600
+  },
+  "urls": {
+    "development": "https://xxx.com",
+    "production": "https://xxx.com"
+  },
+  "features": {
+    "devTools": false,
+    "contextMenu": true,
+    "webSecurity": false
+  }
+}
